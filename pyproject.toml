@@ -1,0 +1,17 @@
+[project]
+name = "correlations"
+version = "0.1.0"
+description = "Корреляции для определения режима течения газожидкостной смеси в трубах"
+readme = "README.md"
+authors = [
+    { name = "vl1lin", email = "v1adbarten@mail.ru" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.13",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
