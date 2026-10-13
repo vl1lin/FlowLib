@@ -1,79 +1,79 @@
-"""
-Correlations — корреляции для определения режима течения газожидкостной смеси
-в трубах.
+"""Correlations — корреляции градиента давления газожидкостного потока в трубах и скважинах.
 
 Публичный API:
 
-* модели (`*Model`) — по одной на каждую корреляцию;
-* их настройки (`*Settings`), результаты классификации (`*Result`) и причины
-  перехода (`*Reason`) — там, где модель их предоставляет;
-* базовые типы (`IFlowModel`, `FlowPatternCode`, `ClassificationResult`);
-* входные параметры (`PipeParams`, `FluidParams`, `SystemParams`).
+* реестр: `get_correlation`, `get_flow_model`, `list_*`, `describe_*`;
+* типы: `FlowState`, `FlowPattern`, `FlowPatternResult`, `CorrelationResult`, `BaseOptions`,
+  интерфейсы `IFlowModel`, `ICorrelation`;
+* ошибки: `ConvergenceError`, `OutOfRangeWarning`, `UnsupportedPatternError`;
+* корреляции (`BeggsBrill`, `MukherjeeBrill`, `HasanKabir`, `Ansari`) и модели режима
+  с их `*Options`.
 
-Формулы, общие для нескольких моделей (трение, расслоённое течение), — в
-`correlations.physics`; для собственных моделей их можно импортировать оттуда
-напрямую.
+Все величины — в СИ.
 """
 
-from correlations.ansari import (
-    AnsariModel,
-    AnsariResult,
-    AnsariSettings,
-    FilmState,
-    TransitionReason,
+from correlations.core.errors import ConvergenceError, OutOfRangeWarning, UnsupportedPatternError
+from correlations.core.interfaces import ICorrelation, IFlowModel
+from correlations.core.options import BaseOptions
+from correlations.core.patterns import FlowPattern
+from correlations.core.state import CorrelationResult, FlowPatternResult, FlowState
+from correlations.flow_models.ansari_fp import AnsariFlowModel, AnsariFlowOptions
+from correlations.flow_models.barnea import BarneaModel, BarneaOptions
+from correlations.flow_models.beggs_brill_map import BeggsBrillMap, BeggsBrillMapOptions
+from correlations.flow_models.hasan_kabir_fp import HasanKabirFlowModel, HasanKabirFlowOptions
+from correlations.flow_models.mukherjee_brill_fp import (
+    MukherjeeBrillFlowModel,
+    MukherjeeBrillFlowOptions,
 )
-from correlations.ansari_vba import AnsariVBAModel
-from correlations.barnea import BarneaModel, BarneaReason, BarneaResult, BarneaSettings
-from correlations.base import ClassificationResult, FlowPatternCode, IFlowModel
-from correlations.beggs_brill import BeggsBrillModel
-from correlations.domain.params import FluidParams, PipeParams, SystemParams
-from correlations.hasan_kabir import (
-    AnnularRejection,
-    HasanKabirModel,
-    HasanKabirReason,
-    HasanKabirResult,
-    HasanKabirSettings,
-)
-from correlations.mukherjee_brill import (
-    MukherjeeBrillModel,
-    MukherjeeBrillReason,
-    MukherjeeBrillResult,
-)
-from correlations.taitel_dukler import (
-    TaitelDuklerModel,
-    TaitelDuklerReason,
-    TaitelDuklerResult,
-    TaitelDuklerSettings,
+from correlations.flow_models.taitel_dukler import TaitelDuklerModel, TaitelDuklerOptions
+from correlations.models.ansari import Ansari, AnsariOptions
+from correlations.models.beggs_brill import BeggsBrill, BeggsBrillOptions
+from correlations.models.hasan_kabir import HasanKabir, HasanKabirOptions
+from correlations.models.mukherjee_brill import MukherjeeBrill, MukherjeeBrillOptions
+from correlations.registry import (
+    describe_correlation,
+    describe_flow_model,
+    get_correlation,
+    get_flow_model,
+    list_correlations,
+    list_flow_models,
 )
 
 __all__ = [
-    "AnnularRejection",
-    "AnsariModel",
-    "AnsariResult",
-    "AnsariSettings",
-    "AnsariVBAModel",
+    "Ansari",
+    "AnsariFlowModel",
+    "AnsariFlowOptions",
+    "AnsariOptions",
     "BarneaModel",
-    "BarneaReason",
-    "BarneaResult",
-    "BarneaSettings",
-    "BeggsBrillModel",
-    "ClassificationResult",
-    "FilmState",
-    "FlowPatternCode",
-    "FluidParams",
-    "HasanKabirModel",
-    "HasanKabirReason",
-    "HasanKabirResult",
-    "HasanKabirSettings",
+    "BarneaOptions",
+    "BaseOptions",
+    "BeggsBrill",
+    "BeggsBrillMap",
+    "BeggsBrillMapOptions",
+    "BeggsBrillOptions",
+    "ConvergenceError",
+    "CorrelationResult",
+    "FlowPattern",
+    "FlowPatternResult",
+    "FlowState",
+    "HasanKabir",
+    "HasanKabirFlowModel",
+    "HasanKabirFlowOptions",
+    "HasanKabirOptions",
+    "ICorrelation",
     "IFlowModel",
-    "MukherjeeBrillModel",
-    "MukherjeeBrillReason",
-    "MukherjeeBrillResult",
-    "PipeParams",
-    "SystemParams",
+    "MukherjeeBrill",
+    "MukherjeeBrillFlowModel",
+    "MukherjeeBrillFlowOptions",
+    "MukherjeeBrillOptions",
+    "OutOfRangeWarning",
     "TaitelDuklerModel",
-    "TaitelDuklerReason",
-    "TaitelDuklerResult",
-    "TaitelDuklerSettings",
-    "TransitionReason",
+    "TaitelDuklerOptions",
+    "UnsupportedPatternError",
+    "describe_correlation",
+    "describe_flow_model",
+    "get_correlation",
+    "get_flow_model",
+    "list_correlations",
+    "list_flow_models",
 ]

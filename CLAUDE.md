@@ -3,17 +3,17 @@
  Python - библиотека содержащая корреляции для расчета давления в скважине при движении газожидкостной системы. На данный момент реализованы: ansari, beggs_brill, taitel-dukler, barnea, hasan-khabir, mukherdge-brill. Планируется расширять количество корреляций, приоритеты отдается механрстическим моделям, а не империческим.
 
 ## Архитектуре проекта
-- src
---correlations
----__init__.py
----ansari.py
----answer_vba.py
----beggs_brill.py
----barnea.py
----taitel-dukler.py
----mukherdge-brill.py
----hasan-khabir
----physics.pay
+- src/correlations
+-- __init__.py        — публичный API
+-- registry.py        — get_correlation / get_flow_model / list_* / describe_*
+-- py.typed
+-- core/              — FlowState, FlowPattern, BaseOptions, ошибки, интерфейсы (IFlowModel, ICorrelation)
+                        и общая физика: friction, dimensionless, mixture, solvers, bubbles,
+                        transitions, annular, stratified, gradient, constants
+-- flow_models/       — модули режима: beggs_brill_map, mukherjee_brill_fp, taitel_dukler,
+                        barnea, hasan_kabir_fp, ansari_fp
+-- models/            — полные корреляции: beggs_brill, mukherjee_brill, hasan_kabir, ansari
+- tests/ (core, flow_models, models, reference), README.md, check.py
 
 ## Окружение и команды
 Windows, PowerShell, менеджер окружения — uv.

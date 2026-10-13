@@ -1,0 +1,1 @@
+﻿case_id,software,software_version,model_or_correlation,model_settings,v_sl_actual_m_s,v_sg_actual_m_s,rho_l_kg_m3,rho_g_kg_m3,mu_l_pa_s,mu_g_pa_s,sigma_n_m,d_m,d_t_m,eps_m,theta_deg,p_pa,flow_regime,holdup,dpdl_total_pa_m,dpdl_gravity_pa_m,dpdl_friction_pa_m,dpdl_acceleration_pa_m,comment

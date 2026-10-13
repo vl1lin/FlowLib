@@ -11,4 +11,11 @@ wheels/
 
 /.claude/
 /Оригинальные_статьи_корреляций/
-pre-commit-config.yaml
+.pre-commit-config.yaml
+.coverage
+check.log
+RESEARCH.md
+HANDOFF.md
+TODO.md
+.python-version
+Correlations — схемы расчёта, пересечения и ТЗ для агента.md

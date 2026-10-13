@@ -9,9 +9,51 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0",
+    "pydantic>=2",
     "scipy>=1.13",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.format]
+exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "N", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# В тестах длинные docstring/комментарии со ссылками на ТЗ и формулы — форматтер их не переносит.
+"tests/**" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["correlations"]
+
+[tool.pyright]
+include = ["src/correlations", "tests"]
+# Код библиотеки (core, flow_models, models, registry) — strict.
+strict = [
+    "src/correlations/core",
+    "src/correlations/flow_models",
+    "src/correlations/models",
+    "src/correlations/registry.py",
+]
+pythonVersion = "3.11"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.10",
+]

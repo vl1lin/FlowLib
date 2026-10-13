@@ -1,30 +1,7 @@
 # Correlations
 
-Библиотека корреляций для определения режима течения газожидкостной смеси в
-трубах (bubble, slug, churn, annular, stratified и т.д.) по механистическим и
-эмпирическим моделям из промысловой литературы.
-
-## Статус
-
-Проект в разработке. Публичный API собран в `correlations/__init__.py`, но
-автоматических тестов пока нет — модели проверялись только вручную, по
-исходным статьям и книге Брилла–Мукерджи «Многофазный поток в скважинах».
-
-## Модели
-
-| Модель                 | Класс               | Диапазон углов от горизонтали |
-| ----------------------- | ------------------- | ------------------------------ |
-| Beggs–Brill             | `BeggsBrillModel`   | −90°…90°                       |
-| Mukherjee–Brill         | `MukherjeeBrillModel` | −90°…90°                     |
-| Barnea (unified)        | `BarneaModel`       | −90°…90°                       |
-| Taitel–Dukler           | `TaitelDuklerModel` | −10°…10°                       |
-| Ansari                  | `AnsariModel`       | 75°…90°                        |
-| Ansari (VBA-порт)       | `AnsariVBAModel`    | 75°…90°                        |
-| Hasan–Kabir             | `HasanKabirModel`   | 45°…90°                        |
-
-`AnsariVBAModel` сохранён только для воспроизводимости старых расчётов
-(упрощённый критерий перехода в кольцевой режим); для новых задач
-использовать `AnsariModel`.
+Библиотека корреляций градиента давления газожидкостного потока в трубах и скважинах
+(приоритет — механистические модели). Все величины — в СИ.
 
 ## Установка
 
@@ -32,40 +9,110 @@
 uv sync
 ```
 
-## Быстрый старт
+## Использование
 
 ```python
-from correlations import AnsariModel, FluidParams, PipeParams
+from correlations import get_correlation, get_flow_model
 
-pipe = PipeParams(diameter=0.1, roughness=1e-5, angle=90.0)
-fluid = FluidParams(
-    density_liquid=850.0,
-    density_gas=15.0,
-    viscosity_liquid=2e-3,
-    viscosity_gas=1.5e-5,
-    surface_tension=0.02,
-)
+model = get_correlation("beggs_brill", payne_correction=True)
+result = model.calc(state)  # state: FlowState; result: CorrelationResult
 
-model = AnsariModel(pipe, fluid)
-result = model.classify(vsl=0.5, vsg=3.0)
-print(result.pattern)  # FlowPatternCode.SLUG / BUBBLE / ANNULAR / ...
-print(result.reason)   # причина перехода — для диагностики
+flow = get_flow_model("barnea")
+model = get_correlation("hasan_kabir", flow_model=flow)  # внедрение модели режима
 ```
 
-Каждая модель принимает `PipeParams` и `FluidParams` и реализует общий
-интерфейс `IFlowModel.classify(vsl, vsg) -> ClassificationResult`. Угол трубы
-проверяется при создании модели: `ValueError`, если он вне `angle_range`
-модели.
+Подробное руководство (установка, входные данные, корреляции, режимы потока, градиент давления) —
+в [`docs/tutorials/`](docs/tutorials/README.md); примеры будут в `docs/examples/`.
 
-## Структура
+Флаги проверяются pydantic: неизвестный флаг или значение не `bool` дают `ValidationError`,
+неизвестное имя модели — `ValueError`. Имена: `list_correlations()`, `list_flow_models()`;
+описания флагов: `describe_correlation(name)`, `describe_flow_model(name)`.
 
-- `base.py` — базовый интерфейс `IFlowModel`, `FlowPatternCode`,
-  `ClassificationResult`;
-- `constants.py` — универсальные физические константы (`GRAVITY`,
-  `SINGLE_PHASE_VELOCITY_EPS`); эмпирические коэффициенты конкретных
-  корреляций остаются в модулях моделей;
-- `domain/params.py` — входные параметры (`PipeParams`, `FluidParams`,
-  `SystemParams`);
-- `physics/` — формулы, общие для нескольких моделей (трение, расслоённое
-  течение);
-- остальные модули — по одной механистической/эмпирической модели каждый.
+Таблицы ниже сформированы из `describe()`; значение по умолчанию соответствует оригинальной статье.
+
+## Корреляции
+
+### `ansari`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `developing_slug` | `True` | Учёт развивающейся пробки (44)–(64). Выключать для сверки с Примером 4.9 и PIPESIM (если там этой ветки нет). Источник: Ansari et al. 1994, ур. 44–64. |
+| `vo_shoham_a_as_published` | `False` | Ā по напечатанному (40) вместо согласованного с (32), (35). Только буквальное воспроизведение статьи; даёт H_LTB = 0.119 вместо 0.130 для R2. Источник: Ansari et al. 1994, ур. 40. |
+| `bridging_with_delta_min` | `True` | В критерии (12) берётся δ_min (текст статьи); False — δ из (96) (Пример 4.9). False физически ближе к Barnea. Источник: Ansari et al. 1994, ур. 8, 12 (вопрос 1 ТЗ). |
+| `bubble_slug_sin_theta` | `False` | 0.25·v_s·sinθ в (2), как у Barnea [4]. Включать для наклонных скважин. Источник: Ansari et al. 1994, ур. 2; Barnea 1987, [4]. |
+| `eq56_as_published` | `False` | b в (56) по напечатанному (2 − H_LLS) вместо (1 − H_LLS) из вывода (52)–(53). Для R2 вещественного корня (54) нет, развивающаяся пробка не определяется и расчёт идёт по полностью развитой пробке. Только буквальное воспроизведение статьи. Источник: Ansari et al. 1994, ур. 52–57. |
+| `ff_over_fsl_unity` | `False` | f_F/f_SL = 1 без итерации по Re плёнки. Быстрый расчёт; Пример 4.9. Источник: Ansari et al. 1994, ур. 74–78. |
+
+### `beggs_brill`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `revised_map` | `False` | Карта L1–L4 с переходной зоной (монография 4.110–4.119) вместо оригинальной карты (ур. 9–10); H_L в зоне — интерполяция между segregated и intermittent. Включать для сверки с PIPESIM «BB Revised»; убирает скачок H_L на границе segregated/intermittent. |
+| `payne_correction` | `False` | H_L × 0.924 при θ > 0 (не ниже λ), × 0.685 при θ < 0. Включать для скважин и трубопроводов: оригинал завышает H_L и dp (Пример 4.7). Источник: Payne et al. 1979. |
+| `rough_pipe_friction` | `False` | f_ns по Colebrook с шероховатостью ε вместо гладкой формулы (13). Включать для реальных (шероховатых) труб (Пример 4.7). Источник: Beggs, Brill 1973, ур. 13. |
+| `clip_negative_c` | `False` | C < 0 → C = 0 (ψ ≥ 1 при подъёме). Включать для совместимости с монографией и PIPESIM (Пример 4.7). Источник: Beggs, Brill 1973, ур. 22–25; монография. |
+| `include_acceleration` | `True` | Знаменатель 1 − Ek в ур. 1. Выключать для сверки с примерами монографии и при Ek → 1 (высокоскоростной газ). Источник: Beggs, Brill 1973, ур. 1. |
+
+### `hasan_kabir`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `porteous_low_pressure` | `False` | При p < 1013 кПа граница slug/churn по Porteous (7): v_M = 0.103·√(g·d·Δρ/ρ_g). Включать для низконапорных скважин и лабораторных данных (так рекомендует текст статьи). Источник: Hasan, Kabir 1988, ур. 7. |
+| `wallis_c2` | `False` | C2 скорости пузыря Тейлора по Wallis (23)–(26) вместо 0.345. Включать для вязкой нефти или малого диаметра: N_f < 300 или N_Eo < 100. Источник: Hasan, Kabir 1988, ур. 23–26 (Wallis 1969). |
+| `rise_coef_150` | `False` | 1.50 вместо 1.53 в v∞ для пузырькового H_L (ур. 17). Включать для буквального воспроизведения ур. 17. Источник: Hasan, Kabir 1988, ур. 3 и 17. |
+| `churn_as_slug` | `False` | CHURN считается с C1 пробкового режима. Рекомендация Govier–Aziz из текста; сглаживает скачок slug/churn. Источник: Hasan, Kabir 1988, раздел «Churn Flow». |
+| `include_acceleration` | `True` | Знаменатель 1 − ρ_c·v_g²/p в ур. (33) (кольцевой режим). Выключать для оценки вклада ускорения. Источник: Hasan, Kabir 1988, ур. 33. |
+| `warn_non_vertical` | `True` | OutOfRangeWarning при θ ≠ 90° (модель создана для вертикального подъёма; гравитация считается с sinθ). False отключает только это предупреждение, результат не меняется; отключать при расчёте профиля наклонно-направленной скважины. Источник: Hasan, Kabir 1988 (вертикальный подъём); вопрос 6 ТЗ. |
+
+### `mukherjee_brill`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `include_acceleration` | `True` | Знаменатель 1 − Ek в BUBBLE/SLUG/ANNULAR. Выключать для сверки с Примером 4.8. Источник: Mukherjee, Brill 1985, ур. (1), Δp_a. |
+| `stratified_combined_momentum` | `False` | Уравнение (17) (сумма фаз, без τ_i) вместо (15) для расслоённого потока. Включать для труб большого диаметра (рекомендация авторов); граница диаметра не задана. Источник: Mukherjee, Brill 1985, ур. (15)–(17). |
+| `wall_shear_as_published` | `False` | τ_w = f·ρ·v²/2 (как напечатано: γv²/2g при Moody f) вместо f·ρ·v²/8. Только для воспроизведения кода, реализованного «буквально» (сверка с PIPESIM). Источник: Mukherjee, Brill 1985, ур. (26)–(27). |
+| `annular_fr_log_interp` | `False` | Интерполяция Table 2 по lg H_R вместо линейной по H_R. Таблица снята с графика в лог-шкале (Fig. 4); даёт более гладкую f_R. Источник: Mukherjee, Brill 1985, Table 2. |
+
+## Модели режима потока
+
+### `ansari_fp`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `bridging_with_delta_min` | `True` | В критерии (12) берётся δ_min из (8) (текст статьи); False — δ из (96) (Пример 4.9). False физически ближе к Barnea. Источник: Ansari et al. 1994, ур. 8, 11, 12 (вопрос 1 ТЗ). |
+| `bubble_slug_sin_theta` | `False` | 0.25·v_s·sinθ в (2), как у Barnea [4]. Включать для наклонных скважин. Источник: Ansari et al. 1994, ур. 2; Barnea 1987, [4]. |
+| `ff_over_fsl_unity` | `False` | f_F/f_SL = 1 без итерации по Re плёнки (74)–(76). Быстрый расчёт; Пример 4.9. Источник: Ansari et al. 1994, ур. 74–78. |
+
+### `barnea`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `fm_noslip_reynolds` | `False` | f_M по Re no-slip (ρ_ns·v_m·D/μ_ns) вместо Re = ρ_L·v_m·D/μ_L. Включать при высоком газосодержании и для согласования с Ansari. Источник: Barnea 1987, [5]–[7] (вопрос 8 ТЗ). |
+| `elongated_bubble_horizontal_only` | `True` | ELONGATED_BUBBLE выделяется только при β = 0 (как в статье). False — выделять при любом угле, где α_s = 0. Источник: Barnea 1987, раздел «elongated bubble–slug». |
+| `use_moody_friction` | `True` | Коэффициенты трения для X, Y, Z, f_M — Colebrook с шероховатостью ε. False — гладкие Fanning-формулы Taitel–Dukler (для сверки с Fig. 1–2, гладкие лабораторные трубы). Источник: Barnea 1987, [12]; Taitel, Dukler 1976. |
+| `split_churn` | `True` | Выделять CHURN при α_s > 0.52. False — отдавать как SLUG (для моделей, где churn не считается отдельно). Источник: Barnea 1987, раздел «slug–churn transition». |
+| `friction_ratio_as_published` | `True` | f_LS/f_L в [14] по статье: (D̃_L·Ũ_L)^-n, n = 0.2 (турбулентное течение жидкости), n = 1 (ламинарное); режим выбирается по Re слоя жидкости Re_L < 2000. False — отношение коэффициентов трения f(Re_LS)/f(Re_L) по выбранной модели трения. Источник: Barnea 1987, [14]. |
+
+### `beggs_brill_map`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `revised_map` | `False` | Карта L1–L4 с переходной зоной TRANSITION (монография, 4.110–4.119) вместо оригинальной карты 1973 (ур. 9–10). Включать для сверки с PIPESIM «BB Revised»: убирает скачок H_L на границе segregated/intermittent. Источник: Brill, Mukherjee 1999. |
+
+### `hasan_kabir_fp`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `porteous_low_pressure` | `False` | При p < 1013 кПа граница slug/churn по Porteous (7): v_M = 0.103·√(g·d·Δρ/ρ_g) вместо карты Hewitt–Roberts. Включать для низконапорных скважин и лабораторных данных (так рекомендует текст статьи). Источник: Hasan, Kabir 1988, ур. 7. |
+
+### `mukherjee_brill_fp`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+
+### `taitel_dukler`
+
+| Флаг | По умолчанию | Описание |
+|---|---|---|
+| `laminar_switch` | `True` | Выбор коэффициентов C, n трения по фактическому Re каждой фазы (скорость и гидравлический диаметр (6)) вместо всегда турбулентных. Выключать (False) для сверки с картой Fig. 4 (турбулентный расчёт). Источник: Taitel, Dukler 1976, (5). |
+| `use_moody_friction` | `False` | Градиенты однофазных потоков по Colebrook с шероховатостью ε вместо гладких 0.046·Re^-0.2 / 16/Re. Включать для шероховатых труб (предложение авторов в конце статьи). Источник: Taitel, Dukler 1976. |

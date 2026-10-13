@@ -1,0 +1,17 @@
+{
+  "description": "Ориентировочные точки карт режимов Barnea (Fig. 1-2): воздух-вода 25 C, 0.1 МПа (набор AW). Координаты сняты с рисунка на глаз; перед фиксацией сверить с OLGA/PIPESIM (ТЗ).",
+  "cases": [
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=0", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 0.0, "v_sg_m_s": 0.1, "v_sl_m_s": 0.003}, "expected": "stratified_smooth", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=0", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 0.0, "v_sg_m_s": 10.0, "v_sl_m_s": 0.003}, "expected": "stratified_wavy", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=0", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 0.0, "v_sg_m_s": 80.0, "v_sl_m_s": 0.01}, "expected": "annular", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=0", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 0.0, "v_sg_m_s": 1.0, "v_sl_m_s": 6.0}, "expected": "dispersed_bubble", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=0", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 0.0, "v_sg_m_s": 0.1, "v_sl_m_s": 0.5}, "expected": "elongated_bubble", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=-30", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": -30.0, "v_sg_m_s": 1.0, "v_sl_m_s": 0.01}, "expected": "stratified_wavy", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 5.1 см, beta=30", "provisional": true, "flags": {}, "inputs": {"d_m": 0.051, "theta_deg": 30.0, "v_sg_m_s": 1.0, "v_sl_m_s": 0.1}, "expected": "slug", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 2.54 см, beta=90", "provisional": true, "flags": {}, "inputs": {"d_m": 0.0254, "theta_deg": 90.0, "v_sg_m_s": 0.1, "v_sl_m_s": 0.1}, "expected": "slug", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 2.54 см, beta=90", "provisional": true, "flags": {}, "inputs": {"d_m": 0.0254, "theta_deg": 90.0, "v_sg_m_s": 6.0, "v_sl_m_s": 0.01}, "expected": "churn", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 2.54 см, beta=90", "provisional": true, "flags": {}, "inputs": {"d_m": 0.0254, "theta_deg": 90.0, "v_sg_m_s": 30.0, "v_sl_m_s": 0.01}, "expected": "annular", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 2.54 см, beta=-90", "provisional": true, "flags": {}, "inputs": {"d_m": 0.0254, "theta_deg": -90.0, "v_sg_m_s": 1.0, "v_sl_m_s": 0.01}, "expected": "annular", "rtol": null},
+    {"source": "ТЗ, 'Карты режимов Barnea', 2.54 см, beta=-90", "provisional": true, "flags": {}, "inputs": {"d_m": 0.0254, "theta_deg": -90.0, "v_sg_m_s": 1.0, "v_sl_m_s": 8.0}, "expected": "dispersed_bubble", "rtol": null}
+  ]
+}
