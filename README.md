@@ -22,7 +22,7 @@ model = get_correlation("hasan_kabir", flow_model=flow)  # внедрение м
 ```
 
 Подробное руководство (установка, входные данные, корреляции, режимы потока, градиент давления) —
-в [`docs/tutorials/`](docs/tutorials/README.md); примеры будут в `docs/examples/`.
+в [`docs/tutorials/`](docs/tutorials/README.md); запускаемые примеры — в [`docs/examples/`](docs/examples/README.md).
 
 Флаги проверяются pydantic: неизвестный флаг или значение не `bool` дают `ValidationError`,
 неизвестное имя модели — `ValueError`. Имена: `list_correlations()`, `list_flow_models()`;
